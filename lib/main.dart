@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'todo.dart';
+import 'word.dart';
 import 'databaseUtils.dart';
 import 'package:flutter_stetho/flutter_stetho.dart';
 import 'package:sqflite/sqflite.dart';
@@ -68,13 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
   void _hola(String counter) async {
     await Sqflite.setDebugModeOn(true);
 
-    String path = await initDeleteDb("hola.db");
-    var todoProvider = TodoProvider();
-    var todo = new Todo()..title = "hkljh";
-
-    await todoProvider.open(path);
-    todoProvider.insert(todo);
-    todoProvider.close();
+    String path = await getDatabasePath("word");
+    var wordProvider = WordProvider();
+    var word = new Word();
+    word.originalWord = "dog" + counter;
+    word.translatedWord = "perro";
+    await wordProvider.open(path);
+    await wordProvider.insert(word);
+    await wordProvider.close();
   }
 
   @override

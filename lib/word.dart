@@ -1,18 +1,21 @@
 import 'package:sqflite/sqflite.dart';
 
-final String tableTodo = "todo";
+final String tableWord = "word";
 final String columnId = "_id";
-final String columnTitle = "title";
+final String columnWord = "original_word";
 final String columnDone = "done";
+final String columnTranslatedWord = "translated_word";
 
-class Todo {
+class Word {
   int id;
-  String title;
+  String originalWord;
+  String translatedWord;
   bool done;
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
-      columnTitle: title,
+      columnWord: originalWord,
+      columnTranslatedWord: translatedWord,
       columnDone: done == true ? 1 : 0
     };
     if (id != null) {
@@ -21,53 +24,55 @@ class Todo {
     return map;
   }
 
-  Todo();
+  Word();
 
-  Todo.fromMap(Map<String, dynamic> map) {
+  Word.fromMap(Map<String, dynamic> map) {
     id = map[columnId];
-    title = map[columnTitle];
+    originalWord = map[columnWord];
+    translatedWord = map[columnTranslatedWord];
     done = map[columnDone] == 1;
   }
 }
 
-class TodoProvider {
+class WordProvider {
   Database db;
 
   Future open(String path) async {
     db = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
           await db.execute('''
-create table $tableTodo ( 
-  $columnId integer primary key autoincrement, 
-  $columnTitle text not null,
-  $columnDone integer not null)
-''');
+              create table $tableWord ( 
+                $columnId integer primary key autoincrement, 
+                $columnWord text not null,
+                $columnTranslatedWord text not null,
+                $columnDone integer not null)
+              ''');
         });
   }
 
-  Future<Todo> insert(Todo todo) async {
-    todo.id = await db.insert(tableTodo, todo.toMap());
-    return todo;
+  Future<Word> insert(Word word) async {
+    word.id = await db.insert(tableWord, word.toMap());
+    return word;
   }
 
-  Future<Todo> getTodo(int id) async {
-    List<Map> maps = await db.query(tableTodo,
-        columns: [columnId, columnDone, columnTitle],
+  Future<Word> getWord(int id) async {
+    List<Map> maps = await db.query(tableWord,
+        columns: [columnId, columnDone, columnWord],
         where: "$columnId = ?",
         whereArgs: [id]);
     if (maps.length > 0) {
-      return new Todo.fromMap(maps.first);
+      return new Word.fromMap(maps.first);
     }
     return null;
   }
 
   Future<int> delete(int id) async {
-    return await db.delete(tableTodo, where: "$columnId = ?", whereArgs: [id]);
+    return await db.delete(tableWord, where: "$columnId = ?", whereArgs: [id]);
   }
 
-  Future<int> update(Todo todo) async {
-    return await db.update(tableTodo, todo.toMap(),
-        where: "$columnId = ?", whereArgs: [todo.id]);
+  Future<int> update(Word word) async {
+    return await db.update(tableWord, word.toMap(),
+        where: "$columnId = ?", whereArgs: [word.id]);
   }
 
   Future close() async => db.close();

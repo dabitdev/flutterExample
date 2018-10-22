@@ -23,3 +23,9 @@ Future<String> initDeleteDb(String dbName) async {
   }
   return path;
 }
+
+Future<String> getDatabasePath(String dbName) async {
+  var databasePath = await getDatabasesPath();
+  // print(databasePath);
+  return join(databasePath, dbName);
+}
