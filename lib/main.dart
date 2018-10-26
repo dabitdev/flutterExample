@@ -52,6 +52,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  List<Word> items = new List<Word>();
+
+  @override
+  void initState() {
+    super.initState();
+    getWords().then((result) {
+      setState(() {
+        items = result;
+      });
+    });
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -61,11 +72,17 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
-      _hola(_counter.toString());
+      _insert(_counter.toString());
+
+      getWords().then((result) {
+        setState(() {
+          items = result;
+        });
+      });
     });
   }
 
-  void _hola(String counter) async {
+  void _insert(String counter) async {
     await Sqflite.setDebugModeOn(true);
 
     String path = await getDatabasePath("word");
@@ -76,6 +93,16 @@ class _MyHomePageState extends State<MyHomePage> {
     await wordProvider.open(path);
     await wordProvider.insert(word);
     await wordProvider.close();
+  }
+
+  Future<List<Word>> getWords() async {
+    List<Word> words = new List<Word>();
+    String path = await getDatabasePath("word");
+    var wordProvider = WordProvider();
+    await wordProvider.open(path);
+    words = await wordProvider.getWords();
+    await wordProvider.close();
+    return words;
   }
 
   @override
@@ -92,34 +119,49 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: new Text(widget.title + " " + _counter.toString()),
       ),
-      body: new Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: new Column(
-          // Column is also layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug paint" (press "p" in the console where you ran
-          // "flutter run", or select "Toggle Debug Paint" from the Flutter tool
-          // window in IntelliJ) to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new Text(
-              'You have pushed the button this many times:',
+//      body: new Center(
+//        // Center is a layout widget. It takes a single child and positions it
+//        // in the middle of the parent.
+//        child: new Column(
+//          // Column is also layout widget. It takes a list of children and
+//          // arranges them vertically. By default, it sizes itself to fit its
+//          // children horizontally, and tries to be as tall as its parent.
+//          //
+//          // Invoke "debug paint" (press "p" in the console where you ran
+//          // "flutter run", or select "Toggle Debug Paint" from the Flutter tool
+//          // window in IntelliJ) to see the wireframe for each widget.
+//          //
+//          // Column has various properties to control how it sizes itself and
+//          // how it positions its children. Here we use mainAxisAlignment to
+//          // center the children vertically; the main axis here is the vertical
+//          // axis because Columns are vertical (the cross axis would be
+//          // horizontal).
+//          mainAxisAlignment: MainAxisAlignment.center,
+//          children: <Widget>[
+//            new Text(
+//              'You have pushed the button this many times:',
+//            ),
+//            new Text(
+//              '$_counter',
+//              style: Theme.of(context).textTheme.display1,
+//            ),
+//          ],
+//        ),
+//      ),
+      body: ListView.builder(
+        // Let the ListView know how many items it needs to build
+        itemCount: items.length,
+        // Provide a builder function. This is where the magic happens! We'll
+        // convert each item into a Widget based on the type of item it is.
+        itemBuilder: (context, index) {
+        final item = items[index];
+          return ListTile(
+            title: Text(
+              "${item.originalWord} - ${item.translatedWord}",
+              style: Theme.of(context).textTheme.title,
             ),
-            new Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
+          );
+        },
       ),
       floatingActionButton: new FloatingActionButton(
         onPressed: _incrementCounter,

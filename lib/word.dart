@@ -66,6 +66,17 @@ class WordProvider {
     return null;
   }
 
+  Future<List<Word>> getWords() async {
+    List<Map> list =  await db.query(tableWord,
+        columns: [columnId, columnDone, columnWord]);
+    List<Word> listWord = new List<Word>();
+    for (var map in list) {
+      listWord.add(Word.fromMap(map));
+    }
+    return listWord;
+  }
+
+
   Future<int> delete(int id) async {
     return await db.delete(tableWord, where: "$columnId = ?", whereArgs: [id]);
   }
